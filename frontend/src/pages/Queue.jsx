@@ -2,7 +2,12 @@ import MainLayout from "../layouts/MainLayout";
 import QueueTicket from "../components/QueueTicket";
 import ServiceCard from "../components/ServiceCard";
 
+import { useQueue } from "../context/QueueContext";
+
 export default function Queue() {
+
+  const { generateQueue } = useQueue();
+
   return (
     <MainLayout>
 
@@ -31,20 +36,32 @@ export default function Queue() {
           {/* SERVICE CARDS */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
 
-            <ServiceCard
-              title="General Services"
-              description="Customer assistance and general inquiries."
-            />
+            <div
+              onClick={() => generateQueue("General Services")}
+            >
+              <ServiceCard
+                title="General Services"
+                description="Customer assistance and general inquiries."
+              />
+            </div>
 
-            <ServiceCard
-              title="Priority Lane"
-              description="Senior citizens, PWDs, and priority transactions."
-            />
+            <div
+              onClick={() => generateQueue("Priority Lane")}
+            >
+              <ServiceCard
+                title="Priority Lane"
+                description="Senior citizens, PWDs, and priority transactions."
+              />
+            </div>
 
-            <ServiceCard
-              title="Payments"
-              description="Billing, payments, and cashier transactions."
-            />
+            <div
+              onClick={() => generateQueue("Payments")}
+            >
+              <ServiceCard
+                title="Payments"
+                description="Billing, payments, and cashier transactions."
+              />
+            </div>
 
           </div>
 

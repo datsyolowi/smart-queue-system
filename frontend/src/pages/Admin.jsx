@@ -1,8 +1,18 @@
 import MainLayout from "../layouts/MainLayout";
+
 import StatCard from "../components/StatCard";
 import QueueTable from "../components/QueueTable";
 
+import { useQueue } from "../context/QueueContext";
+
 export default function Admin() {
+
+  const {
+    currentQueue,
+    waitingQueues,
+    callNextQueue,
+  } = useQueue();
+
   return (
     <MainLayout>
 
@@ -25,16 +35,25 @@ export default function Admin() {
 
             </div>
 
-            <button className="
-              bg-cyan-400
-              text-black
-              px-6
-              py-3
-              rounded-2xl
-              font-semibold
-              hover:bg-cyan-300
-              transition
-            ">
+            <button
+              onClick={() => {
+                console.log("CALL NEXT CLICKED");
+                callNextQueue();
+              }}
+              className="
+                bg-cyan-400
+                text-black
+                px-6
+                py-3
+                rounded-2xl
+                font-semibold
+                hover:bg-cyan-300
+                hover:scale-105
+                active:scale-95
+                transition
+                duration-200
+              "
+            >
               Call Next
             </button>
 
@@ -45,12 +64,12 @@ export default function Admin() {
 
             <StatCard
               title="Now Serving"
-              value="A-024"
+              value={`A-${currentQueue}`}
             />
 
             <StatCard
               title="Waiting"
-              value="18"
+              value={waitingQueues.length}
             />
 
             <StatCard

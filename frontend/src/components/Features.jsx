@@ -1,4 +1,5 @@
 import FeatureCard from "./FeatureCard";
+import { motion } from "framer-motion";
 
 export default function Features() {
   return (
@@ -6,7 +7,14 @@ export default function Features() {
 
       <div className="max-w-7xl mx-auto">
 
-        <div className="mb-16">
+        {/* HEADER */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="mb-16"
+        >
 
           <p className="text-cyan-400 font-semibold mb-4">
             SYSTEM FEATURES
@@ -21,9 +29,18 @@ export default function Features() {
             time, and streamline operations in real-time.
           </p>
 
-        </div>
+        </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* FEATURE GRID */}
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          transition={{
+            staggerChildren: 0.15,
+          }}
+          className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+        >
 
           <FeatureCard
             title="Real-Time Updates"
@@ -55,7 +72,7 @@ export default function Features() {
             description="Fully optimized for desktops, tablets, TVs, and mobile devices."
           />
 
-        </div>
+        </motion.div>
 
       </div>
 

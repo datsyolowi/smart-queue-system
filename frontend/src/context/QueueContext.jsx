@@ -1,19 +1,31 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 const QueueContext = createContext();
 
 export function QueueProvider({ children }) {
+  const [currentQueue, setCurrentQueue] = useState(() => {
+    const saved = localStorage.getItem("currentQueue");
+    return saved ? JSON.parse(saved) : 24;
+  });
 
-  const [currentQueue, setCurrentQueue] = useState(24);
+  const [waitingQueues, setWaitingQueues] = useState(() => {
+    const saved = localStorage.getItem("waitingQueues");
 
-  const [waitingQueues, setWaitingQueues] = useState([
-    25,
-    26,
-    27,
-    28,
-  ]);
+    return saved ? JSON.parse(saved) : [25, 26, 27, 28];
+  });
+
+  const [lastGeneratedQueue, setLastGeneratedQueue] = useState(null);
+
+  const [selectedService, setSelectedService] = useState("");
+
+  useEffect(() => {
+    localStorage.setItem("currentQueue", JSON.stringify(currentQueue));
+
+    localStorage.setItem("waitingQueues", JSON.stringify(waitingQueues));
+  }, [currentQueue, waitingQueues]);
 
   const callNextQueue = () => {
+    console.log("CALL NEXT CLICKED");
 
     if (waitingQueues.length === 0) return;
 
@@ -23,15 +35,16 @@ export function QueueProvider({ children }) {
 
     setWaitingQueues((prev) => prev.slice(1));
   };
-
-  const generateQueue = () => {
-
-    const lastQueue =
-      waitingQueues[waitingQueues.length - 1] || currentQueue;
+  const generateQueue = (service) => {
+    const lastQueue = waitingQueues[waitingQueues.length - 1] || currentQueue;
 
     const newQueue = lastQueue + 1;
 
     setWaitingQueues((prev) => [...prev, newQueue]);
+
+    setLastGeneratedQueue(newQueue);
+
+    setSelectedService(service);
   };
 
   return (
@@ -41,6 +54,8 @@ export function QueueProvider({ children }) {
         waitingQueues,
         callNextQueue,
         generateQueue,
+        lastGeneratedQueue,
+        selectedService,
       }}
     >
       {children}
