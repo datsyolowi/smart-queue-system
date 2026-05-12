@@ -1,46 +1,110 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  doc,
+  onSnapshot,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
+
+import { db } from "../firebase";
 
 const QueueContext = createContext();
 
 export function QueueProvider({ children }) {
-  const [currentQueue, setCurrentQueue] = useState(() => {
-    const saved = localStorage.getItem("currentQueue");
-    return saved ? JSON.parse(saved) : 24;
-  });
 
-  const [waitingQueues, setWaitingQueues] = useState(() => {
-    const saved = localStorage.getItem("waitingQueues");
+  const [currentQueue, setCurrentQueue] =
+    useState(24);
 
-    return saved ? JSON.parse(saved) : [25, 26, 27, 28];
-  });
+  const [waitingQueues, setWaitingQueues] =
+    useState([]);
 
-  const [lastGeneratedQueue, setLastGeneratedQueue] = useState(null);
+  const [lastGeneratedQueue, setLastGeneratedQueue] =
+    useState(null);
 
-  const [selectedService, setSelectedService] = useState("");
+  const [selectedService, setSelectedService] =
+    useState("");
 
+  const queueRef = doc(db, "queues", "main");
+
+  // REALTIME LISTENER
   useEffect(() => {
-    localStorage.setItem("currentQueue", JSON.stringify(currentQueue));
 
-    localStorage.setItem("waitingQueues", JSON.stringify(waitingQueues));
-  }, [currentQueue, waitingQueues]);
+    const unsubscribe = onSnapshot(
+      queueRef,
+      async (snapshot) => {
 
-  const callNextQueue = () => {
-    console.log("CALL NEXT CLICKED");
+        if (snapshot.exists()) {
+
+          const data = snapshot.data();
+
+          setCurrentQueue(data.currentQueue);
+
+          setWaitingQueues(data.waitingQueues);
+
+        } else {
+
+          await setDoc(queueRef, {
+            currentQueue: 24,
+            waitingQueues: [25, 26, 27, 28],
+          });
+
+        }
+
+      }
+    );
+
+    return () => unsubscribe();
+
+  }, []);
+
+  // CALL NEXT
+  const callNextQueue = async () => {
 
     if (waitingQueues.length === 0) return;
 
     const nextQueue = waitingQueues[0];
 
-    setCurrentQueue(nextQueue);
+    const updatedQueues =
+      waitingQueues.slice(1);
 
-    setWaitingQueues((prev) => prev.slice(1));
+    await updateDoc(queueRef, {
+      currentQueue: nextQueue,
+      waitingQueues: updatedQueues,
+    });
+
+    const announcement =
+      new SpeechSynthesisUtterance(
+        `Now serving A ${nextQueue}`
+      );
+
+    announcement.rate = 0.9;
+
+    speechSynthesis.speak(announcement);
   };
-  const generateQueue = (service) => {
-    const lastQueue = waitingQueues[waitingQueues.length - 1] || currentQueue;
+
+  // GENERATE QUEUE
+  const generateQueue = async (service) => {
+
+    const lastQueue =
+      waitingQueues[waitingQueues.length - 1]
+      || currentQueue;
 
     const newQueue = lastQueue + 1;
 
-    setWaitingQueues((prev) => [...prev, newQueue]);
+    const updatedQueues = [
+      ...waitingQueues,
+      newQueue,
+    ];
+
+    await updateDoc(queueRef, {
+      waitingQueues: updatedQueues,
+    });
 
     setLastGeneratedQueue(newQueue);
 
